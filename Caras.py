@@ -12,33 +12,33 @@ firebase_admin.initialize_app(cred, {
 
 # ==== Función para dibujar caras ====
 def draw_face(expression, blink=False):
-    face = np.ones((640, 360, 3), dtype=np.uint8) * 255  # Pantalla vertical
+    face = np.ones((360, 640, 3), dtype=np.uint8) * 255  # Pantalla horizontal
 
-    # Cara base
-    cv2.circle(face, (180, 320), 150, (255, 255, 153), -1)
+    # Cara base centrada
+    cv2.circle(face, (320, 180), 150, (255, 255, 153), -1)
 
-    # Ojos
+    # Ojos (ajustados a horizontal)
     if blink:
-        cv2.line(face, (120, 280), (140, 280), (0, 0, 0), 4)
-        cv2.line(face, (220, 280), (240, 280), (0, 0, 0), 4)
+        cv2.line(face, (250, 150), (270, 150), (0, 0, 0), 4)
+        cv2.line(face, (370, 150), (390, 150), (0, 0, 0), 4)
     else:
-        cv2.circle(face, (130, 280), 15, (0, 0, 0), -1)
-        cv2.circle(face, (230, 280), 15, (0, 0, 0), -1)
+        cv2.circle(face, (260, 150), 15, (0, 0, 0), -1)
+        cv2.circle(face, (380, 150), 15, (0, 0, 0), -1)
 
     # Boca y cejas según expresión
     if expression == "happy":
-        cv2.ellipse(face, (180, 380), (50, 25), 0, 0, 180, (0, 0, 0), 4)
+        cv2.ellipse(face, (320, 230), (50, 25), 0, 0, 180, (0, 0, 0), 4)
     elif expression == "sad":
-        cv2.ellipse(face, (180, 410), (50, 25), 0, 0, -180, (0, 0, 0), 4)
+        cv2.ellipse(face, (320, 250), (50, 25), 0, 0, -180, (0, 0, 0), 4)
     elif expression == "angry":
-        cv2.line(face, (100, 250), (140, 270), (0, 0, 0), 4)
-        cv2.line(face, (220, 270), (260, 250), (0, 0, 0), 4)
-        cv2.line(face, (140, 390), (220, 390), (0, 0, 0), 4)
+        cv2.line(face, (230, 130), (270, 145), (0, 0, 0), 4)
+        cv2.line(face, (370, 145), (410, 130), (0, 0, 0), 4)
+        cv2.line(face, (270, 240), (370, 240), (0, 0, 0), 4)
     elif expression == "neutral":
-        cv2.line(face, (140, 390), (220, 390), (0, 0, 0), 3)
+        cv2.line(face, (270, 240), (370, 240), (0, 0, 0), 3)
     elif expression == "gel":
-        cv2.ellipse(face, (180, 380), (50, 25), 0, 0, 180, (255, 0, 0), 4)
-        cv2.putText(face, "💧", (160, 200), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255, 0, 0), 2)
+        cv2.ellipse(face, (320, 230), (50, 25), 0, 0, 180, (255, 0, 0), 4)
+        cv2.putText(face, "💧", (300, 90), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255, 0, 0), 2)
 
     return face
 
@@ -54,11 +54,11 @@ def show_expression(expression, duration=3):
 # ==== Loop principal con parpadeo en "neutral" ====
 def main_loop():
     cv2.namedWindow("BeniBot", cv2.WINDOW_AUTOSIZE)
-    
+
     blink = False
     last_blink_time = time.time()
-    blink_duration = 0.15  # Parpadeo breve
-    blink_interval = 2.5   # Cada 2.5s
+    blink_duration = 0.15
+    blink_interval = 2.5
 
     while True:
         actions_ref = db.reference("/Acciones").get()
@@ -82,7 +82,6 @@ def main_loop():
         else:
             current_time = time.time()
 
-            # Parpadeo
             if not blink and current_time - last_blink_time > blink_interval:
                 blink = True
                 blink_start = current_time
@@ -90,7 +89,6 @@ def main_loop():
                 blink = False
                 last_blink_time = current_time
 
-            # Mostrar neutral con o sin parpadeo
             face = draw_face("neutral", blink)
             cv2.imshow("BeniBot", face)
 
